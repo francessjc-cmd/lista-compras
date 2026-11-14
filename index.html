@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lista de compras</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f6b4a">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap">
+<style>
+:root{--bg:#f1f4f1;--surface:#fff;--ink:#17211b;--muted:#5d6b62;--line:#dbe3dd;--accent:#1f6b4a;--accent-ink:#fff;--done:#9aa89f;--danger:#b3372b;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121815;--surface:#1b241f;--ink:#e8efea;--muted:#9fb0a5;--line:#2c3932;--accent:#5fc496;--accent-ink:#0c1a13;--done:#6c7d72;--danger:#ef8a7e}}
+:root[data-theme="dark"]{--bg:#121815;--surface:#1b241f;--ink:#e8efea;--muted:#9fb0a5;--line:#2c3932;--accent:#5fc496;--accent-ink:#0c1a13;--done:#6c7d72;--danger:#ef8a7e}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:17px;line-height:1.4}
+main{max-width:640px;margin:0 auto;padding:20px 16px 130px}
+h1{font-size:2rem;font-weight:800;letter-spacing:-.02em;margin:8px 0 4px}
+.sub{color:var(--muted);margin:0 0 16px}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.count{font-weight:600;margin:8px 0 12px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);padding:6px 0;z-index:2}
+.tabs button{flex:1;padding:10px 6px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.row input,.row select,li select{font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);min-width:0}
+.row input{flex:2 1 160px}.row select{flex:1 1 120px}
+button.primary{font:inherit;font-weight:600;padding:10px 16px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+button.ghost{font:inherit;font-weight:600;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);cursor:pointer}
+button.confirm{background:var(--danger)!important;color:#fff!important;border-color:var(--danger)!important}
+details.group{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
+details.group>summary{list-style:none;cursor:pointer;padding:14px 16px;font-weight:800;display:flex;gap:8px;align-items:center}
+details.group>summary::-webkit-details-marker{display:none}
+summary .nm{flex:1}
+summary small{color:var(--muted);font-weight:600}
+summary .mv{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;width:36px;height:36px;font-size:1rem;cursor:pointer}
+ul{list-style:none;margin:0;padding:0}
+li{display:flex;align-items:center;border-top:1px solid var(--line);flex-wrap:wrap}
+li label{flex:1 1 200px;display:flex;align-items:center;gap:12px;padding:12px 16px;cursor:pointer;min-width:0}
+li input[type=checkbox]{width:24px;height:24px;accent-color:var(--accent);flex:none}
+li span{overflow-wrap:anywhere}
+li.done span{color:var(--done);text-decoration:line-through}
+li select{margin:0 4px 8px 16px;max-width:210px;padding:6px}
+li .del{border:0;background:none;color:var(--danger);font-size:1.4rem;padding:8px 16px;cursor:pointer;margin-left:auto}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+.tools{display:flex;justify-content:space-between;margin:8px 0 24px;gap:8px;flex-wrap:wrap}
+.link{background:none;border:0;color:var(--muted);font:inherit;text-decoration:underline;cursor:pointer;padding:6px 0}
+.dock{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.dock .in{max-width:640px;margin:0 auto}
+.dock .primary{width:100%;padding:14px;font-size:1.05rem}
+.end{display:flex;flex-direction:column;gap:8px;margin-top:20px}
+.end .link{text-align:center}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:16px}
+.panel textarea{width:100%;min-height:200px;font:inherit;font-size:.95rem;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);resize:vertical}
+.panel .row{margin:10px 0 0}
+.panel .row>*{flex:1 1 auto;text-align:center;text-decoration:none}
+.panel a.primary{display:inline-block}
+.status{color:var(--accent);font-weight:600;min-height:1.4em;margin:6px 0 0}
+h2{font-size:1.2rem;margin:8px 0}
+.hist details{background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;padding:12px 16px}
+.hist summary{cursor:pointer;font-weight:600}
+.hist p{margin:8px 0 0;color:var(--muted);font-size:.95rem}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+  <h1>Lista de compras</h1>
+  <p class="sub" id="week"></p>
+  <p class="sub" id="syncNote" hidden></p>
+  <div class="bar" id="barWrap" hidden><i id="fill"></i></div>
+  <div class="count" id="cnt"></div>
+  <div class="tabs" role="group" aria-label="Vue">
+    <button data-v="plan" aria-pressed="true">Planifier</button>
+    <button data-v="buy" aria-pressed="false" id="tabBuy">À acheter</button>
+    <button data-v="hist" aria-pressed="false">Historique</button>
+  </div>
+
+  <div id="planTop">
+    <div class="row"><input id="q" type="search" placeholder="Chercher un article" aria-label="Chercher un article"></div>
+    <div class="row">
+      <input id="newName" placeholder="Ajouter un article" aria-label="Nom de l’article" maxlength="80">
+      <select id="newGroup" aria-label="Rayon"></select>
+      <button class="primary" id="addBtn">Ajouter</button>
+    </div>
+  </div>
+
+  <div id="list"></div>
+
+  <div id="planEnd" class="tools">
+    <button class="link" id="editBtn">Modifier les rayons et la liste</button>
+    <button class="link" id="restoreBtn">Rétablir la liste d’origine</button>
+  </div>
+
+  <div id="buyEnd" hidden>
+    <div class="panel" id="exportPanel" hidden>
+      <textarea id="exportText" readonly aria-label="Liste à exporter"></textarea>
+      <div class="row">
+        <button class="ghost" id="copyBtn">Copier</button>
+        <button class="ghost" id="shareBtn" hidden>Partager</button>
+        <a class="primary" id="waBtn" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+      <p class="status" id="status" role="status"></p>
+    </div>
+    <div class="end">
+      <button class="ghost" id="finish">Enregistrer la semaine et remettre à zéro</button>
+      <button class="link" id="resetOnly">Remettre à zéro sans enregistrer</button>
+    </div>
+  </div>
+
+  <section class="hist" id="histView" hidden>
+    <h2>Semaines enregistrées</h2>
+    <div id="hist"></div>
+  </section>
+</main>
+<div class="dock"><div class="in"><button class="primary" id="dockBtn"></button></div></div>
+
+<script>
+if("serviceWorker" in navigator)window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+var DEFAULT_LIST = {
+"Pain et petit-déjeuner":["pão de hamburguer","torrada","nutella","geleia QUEENSBERRY morango","pão","Café BRAVO Tenor Torra Media","Capuccino 3 CORAÇÕES BAUNILHA","Corn Flakes","granola","aveia em flocos FINOS","pão de queijo","tapioca","massa pastel"],
+"Riz, légumineuses et pâtes":["Lentilha rosa","soja","macarrão","macarrãozinho rápido","arroz – branco","arroz – integral","feijão marrom","feijão preto","grão de bico","milharina para polenta","farofa"],
+"Conserves, huiles et sauces":["molho de tomate","azeitona preta","palmito","azeite","ervilha em conserva","grao de bico em conserva","cornichon em conserva","tomate seco em conserva","oleo de girassol","Shoyu Sakura Tradicional 1L","vinagre","oleo de gergelim","molho de pimenta","catchup","maionese","mostarda brasileira","mostarda francesa","leite de coco SOCOCO"],
+"Farines, sucres et pâtisserie":["farinha de aveia","farinha de rosca","farinha PANCO (farinha para empanar)","farinha de trigo – branca","farinha de trigo – integral","açucar mascavo","açucar demerara","amido de milho (MAISENA)","fermento bolo (do lado do açucar)","fermento pão","extrato de baunilha","extrato de amêndoas","coco ralado sem açucar","Psilium","mel","sal do Himalaya rosa","temperos","pasta de amendoim","pipoca microondas com manteiga"],
+"Boissons":["suco de uva","Monster Clara","cerveja","água com gás","suco laranja"],
+"Frais et laitages":["queijo mussarela","queijo verde","creme leite","leite moça","leite sem lactose","Requeijão","manteiga","ricota","iogurte"],
+"Hygiène":["absorvente diário","absorvente normal","sabonete","shampoo","condicionador","óleo corporal","pasta de dente","escova de dente","fio dental","listerine","creme barbear","prestobarba","cotonete","algodão","papel higiênico","lenço umedecido","desodorante"],
+"Maison et ménage":["CIF cremoso","cloro","lustra móveis","sabão em pedra","óleo de peroba pequeno","alcool","bucha lavar louça","bombril","amaciante de roupas","guardanapo","vela","inseticida RAID EUCALIPTO","papel alumínio","papel manteiga","fósforo","plastico filme","saco para freezer","pregador","ascendedor da lareira","pilhas"]
+};
+var STORE_ORDER=["Hygiène","Maison et ménage","Boissons","Pain et petit-déjeuner","Riz, légumineuses et pâtes","Conserves, huiles et sauces","Farines, sucres et pâtisserie","Frais et laitages"];
+var KEY="lista-compras-v2", state=null, view="plan", editing=false, uid=1, exportOpen=false;
+
+function defaults(){
+  var items=[]; uid=1;
+  Object.keys(DEFAULT_LIST).forEach(function(g){DEFAULT_LIST[g].forEach(function(n){items.push({id:uid++,name:n,group:g,need:false,got:false,n:items.length});});});
+  var hist=[]; try{var o=JSON.parse(localStorage.getItem("lista-compras-v1")||"null"); if(o&&Array.isArray(o.history))hist=o.history.map(function(w){return {date:w.date,need:w.total,bought:w.bought,missed:[]};});}catch(e){}
+  return {items:items,order:STORE_ORDER.slice(),history:hist,uid:uid};
+}
+function load(){
+  try{var r=localStorage.getItem(KEY); if(r){var s=JSON.parse(r); if(s&&Array.isArray(s.items)){uid=s.uid||s.items.length+1; s.history=s.history||[]; s.order=(!s.order||s.order.join("|")==="Pain et petit-déjeuner|Riz, légumineuses et pâtes|Conserves, huiles et sauces|Farines, sucres et pâtisserie|Boissons|Frais et laitages|Hygiène|Maison et ménage")?STORE_ORDER.slice():s.order; return s;}}}catch(e){}
+  return defaults();
+}
+function localSave(){ state.uid=uid; try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} }
+var dbDoc=null, canWrite=true, pending={}, flushing=false, seeded=false, loadTimer=null;
+function setNote(t){var n=$("syncNote"); n.textContent=t; n.hidden=!t;}
+function deepMerge(a,b){Object.keys(b).forEach(function(k){var v=b[k]; if(v&&typeof v==="object"&&!Array.isArray(v)){if(!a[k]||typeof a[k]!=="object"||Array.isArray(a[k]))a[k]={}; deepMerge(a[k],v);}else a[k]=v;});}
+function itemData(i,idx){return {name:i.name,group:i.group,need:!!i.need,got:!!i.got,del:!!i.del,n:i.n!=null?i.n:(idx||0)};}
+function serialize(){var items={}; state.items.forEach(function(i,idx){items[String(i.id)]=itemData(i,idx);}); return {items:items,order:state.order,history:state.history,week:state.week||weekKey()};}
+function pItem(i){var o={}; o[String(i.id)]=itemData(i); return {items:o};}
+function pMeta(){return {order:state.order,history:state.history};}
+function pAll(){var m=pMeta(),o={}; state.items.forEach(function(i,idx){o[String(i.id)]=itemData(i,idx);}); m.items=o; return m;}
+function save(p){localSave(); if(!p||!dbDoc||!canWrite)return; deepMerge(pending,p); if(!flushing)flush();}
+function flush(){
+  if(!Object.keys(pending).length){flushing=false; return;}
+  flushing=true; var p=pending; pending={};
+  function fin(){flushing=false; if(Object.keys(pending).length)flush();}
+  dbDoc.update(p).then(fin,function(e){if(e&&e.code==="invalid_argument"){canWrite=false; setNote("Lecture seule : tu n’as pas le droit de modifier cette liste."); render();} fin();});
+}
+function replaceAll(){
+  localSave(); if(!dbDoc||!canWrite)return; pending={}; flushing=true;
+  function fin(){flushing=false; if(Object.keys(pending).length)flush();}
+  dbDoc.set(serialize()).then(fin,fin);
+}
+function newId(){return "i"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function fromDoc(d){
+  var items=[], m=d.items||{};
+  Object.keys(m).forEach(function(k){var v=m[k]; if(!v||v.del||!v.name)return; items.push({id:k,name:v.name,group:v.group,need:!!v.need,got:!!v.got,n:v.n||0});});
+  items.sort(function(a,b){return a.n-b.n;});
+  state.items=items; if(Array.isArray(d.order))state.order=d.order; state.history=Array.isArray(d.history)?d.history:[]; state.week=d.week;
+}
+function weekKey(){var d=new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+var weekDone=false;
+function checkWeek(){
+  if(weekDone||!canWrite||!dbDoc)return; weekDone=true; var wk=weekKey();
+  if(state.week===wk)return;
+  var patch;
+  if(state.week){
+    var need=state.items.filter(function(i){return i.need;});
+    if(need.length&&!state.history.some(function(h){return h.week===state.week;})){
+      state.history.unshift({date:new Date(state.week+"T12:00:00").getTime(),week:state.week,need:need.length,bought:need.filter(function(i){return i.got;}).map(function(i){return i.name;}),missed:need.filter(function(i){return !i.got;}).map(function(i){return i.name;})});
+      state.history=state.history.slice(0,52);
+    }
+    resetAll(); patch=pAll();
+  } else patch=pMeta();
+  patch.week=wk; state.week=wk; save(patch); render();
+}
+function applyRO(){
+  if(canWrite)return;
+  document.querySelectorAll("#list input[type=checkbox],#newName,#newGroup,#addBtn,#finish,#resetOnly,#restoreBtn,#editBtn").forEach(function(x){x.disabled=true;});
+}
+function $(id){return document.getElementById(id);}
+function el(tag,cls,txt){var e=document.createElement(tag); if(cls)e.className=cls; if(txt!=null)e.textContent=txt; return e;}
+function fmt(d){return new Date(d).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});}
+function groups(){
+  var g=state.order.filter(function(x,i,a){return a.indexOf(x)===i;});
+  state.items.forEach(function(i){if(g.indexOf(i.group)<0)g.push(i.group);});
+  return g;
+}
+function moveGroup(g,dir){var o=groups(),i=o.indexOf(g),j=i+dir; if(j<0||j>=o.length)return; o[i]=o[j]; o[j]=g; state.order=o; save(pMeta()); render();}
+
+function buildGroups(box,opts){
+  var q=(opts.q||"").toLowerCase(), shown=0, openState=window.__open||(window.__open={});
+  groups().forEach(function(g){
+    var items=state.items.filter(function(i){return i.group===g;});
+    var vis=items.filter(function(i){return (opts.onlyNeed?i.need:true)&&(!q||i.name.toLowerCase().indexOf(q)>=0);});
+    var keepEmpty=editing&&!q&&!opts.onlyNeed;
+    if(!vis.length&&!keepEmpty)return; shown+=vis.length;
+    var d=el("details","group"); d.open=openState[g]!==false;
+    d.addEventListener("toggle",function(){openState[g]=d.open;});
+    var s=el("summary"); s.appendChild(el("span","nm",g));
+    var c=opts.onlyNeed?items.filter(function(i){return i.need&&i.got;}).length+"/"+items.filter(function(i){return i.need;}).length:items.filter(function(i){return i.need;}).length+" à acheter";
+    s.appendChild(el("small",null,c));
+    if(editing&&!q&&!opts.onlyNeed){
+      [["↑",-1,"Monter le rayon "],["↓",1,"Descendre le rayon "]].forEach(function(m){
+        var b=el("button","mv",m[0]); b.setAttribute("aria-label",m[2]+g);
+        b.addEventListener("click",function(e){e.preventDefault(); e.stopPropagation(); moveGroup(g,m[1]);}); s.appendChild(b);
+      });
+    }
+    d.appendChild(s);
+    var ul=el("ul");
+    vis.forEach(function(it){
+      var flag=opts.onlyNeed?"got":"need";
+      var li=el("li",(opts.onlyNeed&&it.got)?"done":"");
+      var lab=el("label"), cb=el("input"); cb.type="checkbox"; cb.checked=!!it[flag];
+      cb.addEventListener("change",function(){it[flag]=cb.checked; if(flag==="need"&&!cb.checked)it.got=false; save(pItem(it)); render();});
+      lab.appendChild(cb); lab.appendChild(el("span",null,it.name)); li.appendChild(lab);
+      if(editing&&!opts.onlyNeed){
+        var sel=el("select"); sel.setAttribute("aria-label","Rayon de "+it.name);
+        groups().forEach(function(x){var o=el("option",null,x); o.value=x; sel.appendChild(o);}); sel.value=it.group;
+        sel.addEventListener("change",function(){it.group=sel.value; save(pItem(it)); render();}); li.appendChild(sel);
+        var x=el("button","del","×"); x.setAttribute("aria-label","Supprimer "+it.name);
+        x.addEventListener("click",function(){it.del=true; save(pItem(it)); state.items=state.items.filter(function(o){return o.id!==it.id;}); render();}); li.appendChild(x);
+      }
+      ul.appendChild(li);
+    });
+    d.appendChild(ul); box.appendChild(d);
+  });
+  return shown;
+}
+
+function exportText(){
+  var lines=["*Lista de compras* – "+fmt(Date.now()),""];
+  groups().forEach(function(g){
+    var it=state.items.filter(function(i){return i.group===g&&i.need&&!i.got;}); if(!it.length)return;
+    lines.push("*"+g+"*"); it.forEach(function(i){lines.push("☐ "+i.name);}); lines.push("");
+  });
+  return lines.join("\n").trim();
+}
+
+function render(){renderInner(); applyRO();}
+function renderInner(){
+  var need=state.items.filter(function(i){return i.need;}), got=need.filter(function(i){return i.got;});
+  var last=state.history[0];
+  $("week").textContent=last?"Dernière semaine enregistrée : "+fmt(last.date):"Aucune semaine enregistrée pour l’instant";
+  $("tabBuy").textContent="À acheter ("+need.length+")";
+  document.querySelectorAll(".tabs button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.v===view);});
+  $("planTop").hidden=view!=="plan"; $("planEnd").hidden=view!=="plan";
+  $("buyEnd").hidden=view!=="buy"; $("histView").hidden=view!=="hist"; $("list").hidden=view==="hist";
+  $("barWrap").hidden=view!=="buy";
+  var box=$("list"); box.textContent="";
+  if(view==="plan"){
+    $("cnt").textContent=need.length+" article"+(need.length>1?"s":"")+" à acheter sur "+state.items.length+". Coche ce qu’il te faut.";
+    var sel=$("newGroup"), cur=sel.value; sel.textContent=""; groups().forEach(function(g){var o=el("option",null,g); o.value=g; sel.appendChild(o);}); if(cur)sel.value=cur;
+    var n=buildGroups(box,{q:$("q").value});
+    if(!n&&!editing)box.appendChild(el("div","empty","Aucun article ne correspond."));
+    $("editBtn").textContent=editing?"Terminer la modification":"Modifier les rayons et la liste";
+    $("dockBtn").textContent="Voir la liste à acheter ("+need.length+")"; $("dockBtn").hidden=false;
+  } else if(view==="buy"){
+    $("cnt").textContent=got.length+" dans le chariot sur "+need.length;
+    $("fill").style.width=(need.length?got.length/need.length*100:0)+"%";
+    var m=buildGroups(box,{onlyNeed:true});
+    if(!m)box.appendChild(el("div","empty","Rien à acheter pour l’instant. Va dans « Planifier » et coche ce qu’il te faut."));
+    $("exportPanel").hidden=!exportOpen;
+    if(exportOpen){var t=exportText(); $("exportText").value=t; $("waBtn").href="https://wa.me/?text="+encodeURIComponent(t);}
+    $("dockBtn").textContent=exportOpen?"Masquer l’export":"Exporter la liste"; $("dockBtn").hidden=false;
+  } else {
+    $("cnt").textContent=""; $("dockBtn").hidden=true;
+    var h=$("hist"); h.textContent="";
+    if(!state.history.length)h.appendChild(el("p",null,"Chaque semaine enregistrée apparaîtra ici avec les articles pris."));
+    state.history.forEach(function(w){
+      var d=el("details"), nb=w.bought.length;
+      d.appendChild(el("summary",null,(w.week?"Semaine du "+fmt(w.week+"T12:00:00"):fmt(w.date))+" : "+nb+" article"+(nb>1?"s":"")+" pris"+(w.need!=null?" sur "+w.need:"")));
+      d.appendChild(el("p",null,nb?w.bought.join(", "):"Aucun article coché."));
+      if(w.missed&&w.missed.length)d.appendChild(el("p",null,"Pas pris : "+w.missed.join(", ")));
+      h.appendChild(d);
+    });
+  }
+}
+
+function resetAll(){state.items.forEach(function(i){i.need=false;i.got=false;});}
+var armed=null;
+function arm(btn,label,action){
+  if(armed&&armed.btn===btn){clearTimeout(armed.t); var a=armed; armed=null; a.restore(); action(); return;}
+  if(armed){clearTimeout(armed.t); armed.restore(); armed=null;}
+  var orig=btn.textContent; btn.textContent=label; btn.classList.add("confirm");
+  function restore(){btn.textContent=orig; btn.classList.remove("confirm");}
+  armed={btn:btn,restore:restore,t:setTimeout(function(){armed=null; restore();},4000)};
+}
+$("finish").addEventListener("click",function(){
+  arm($("finish"),"Confirmer : enregistrer et remettre à zéro",function(){
+    var need=state.items.filter(function(i){return i.need;});
+    state.history.unshift({date:Date.now(),week:weekKey(),need:need.length,bought:need.filter(function(i){return i.got;}).map(function(i){return i.name;}),missed:need.filter(function(i){return !i.got;}).map(function(i){return i.name;})});
+    state.history=state.history.slice(0,52); resetAll(); exportOpen=false; view="plan"; save(pAll()); render(); window.scrollTo(0,0);
+  });
+});
+$("resetOnly").addEventListener("click",function(){
+  arm($("resetOnly"),"Confirmer : tout décocher sans enregistrer",function(){resetAll(); exportOpen=false; save(pAll()); render();});
+});
+$("restoreBtn").addEventListener("click",function(){
+  arm($("restoreBtn"),"Confirmer : rétablir la liste d’origine",function(){var h=state.history; state=defaults(); state.history=h; replaceAll(); render();});
+});
+document.querySelectorAll(".tabs button").forEach(function(b){
+  b.addEventListener("click",function(){view=b.dataset.v; render(); window.scrollTo(0,0);});
+});
+$("dockBtn").addEventListener("click",function(){
+  if(view==="plan"){view="buy"; render(); window.scrollTo(0,0);}
+  else if(view==="buy"){exportOpen=!exportOpen; render(); if(exportOpen)$("exportPanel").scrollIntoView({behavior:"smooth",block:"center"});}
+});
+$("editBtn").addEventListener("click",function(){editing=!editing; render();});
+$("q").addEventListener("input",render);
+function addItem(){
+  var n=$("newName").value.trim(); if(!n)return;
+  var it={id:newId(),name:n,group:$("newGroup").value,need:true,got:false,n:Date.now()}; state.items.push(it); $("newName").value=""; save(pItem(it)); render();
+}
+$("addBtn").addEventListener("click",addItem);
+$("newName").addEventListener("keydown",function(e){if(e.key==="Enter")addItem();});
+function say(t){$("status").textContent=t; setTimeout(function(){$("status").textContent="";},2500);}
+$("copyBtn").addEventListener("click",function(){
+  var ta=$("exportText"), t=ta.value;
+  function fallback(){ta.select(); try{say(document.execCommand("copy")?"Liste copiée.":"Sélectionne le texte et copie-le.");}catch(e){say("Sélectionne le texte et copie-le.");}}
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(function(){say("Liste copiée.");},fallback);}else fallback();
+});
+if(navigator.share){$("shareBtn").hidden=false; $("shareBtn").addEventListener("click",function(){navigator.share({title:"Lista de compras",text:$("exportText").value}).catch(function(){});});}
+
+state=load(); render();
+
+if(window.claude&&window.claude.use){
+  Promise.all([claude.use("db"),claude.use("user")]).then(function(r){
+    var db=r[0], user=r[1]; if(!db)return;
+    return Promise.resolve(user&&user.can?user.can("data.write"):null).then(function(c){
+      if(c===false)canWrite=false;
+      var ref=db.doc("lista/main");
+      loadTimer=setTimeout(function(){setNote("Synchronisation impossible pour l’instant : les changements restent sur cet appareil.");},10000);
+      ref.onSnapshot(function(snap){
+        if(!snap.metadata.fromCache){clearTimeout(loadTimer); setNote(canWrite?"Liste partagée, synchronisée en direct.":"Lecture seule : demande un accès Contributeur ou Éditeur pour modifier la liste.");}
+        if(!snap.exists){
+          if(!seeded&&canWrite&&!snap.metadata.fromCache){seeded=true; ref.set(serialize()).catch(function(){canWrite=false; render();});}
+          return;
+        }
+        dbDoc=ref; fromDoc(snap.data()); localSave(); render(); if(!snap.metadata.fromCache)checkWeek();
+      },function(){clearTimeout(loadTimer); dbDoc=null; setNote("Synchronisation interrompue : les changements restent sur cet appareil.");});
+    });
+  }).catch(function(){});
+}
+</script>
+</body>
+</html>
